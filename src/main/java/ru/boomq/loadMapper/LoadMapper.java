@@ -8,12 +8,9 @@ public class LoadMapper {
 
         Map<Long, Long> timeLine = new HashMap<>();
 
-        mapper(timeLine,7, 4, 4, 4, 4);
-
-//        alg(map, 4, 20, 4, 4, 4);
+        mapper(timeLine, 7, 4, 4, 4, 4);
 
         timeLine.forEach((k, v) -> System.out.println(k + ";" + v));
-
     }
 
 
@@ -45,10 +42,10 @@ public class LoadMapper {
 
 
         //startup
-        int idx = 0;
+        int startupStepNumber = 0;
         for (long i = initDelaySec; i < initDelaySec + startupTimeSec; i++) {
-            timeLine.merge(i, (long) (threadPerSec * idx), Long::sum);
-            idx++;
+            timeLine.merge(i, (long) (threadPerSec * startupStepNumber), Long::sum);
+            startupStepNumber++;
         }
 
         //hold
@@ -57,10 +54,10 @@ public class LoadMapper {
         }
 
         //shutdown
-        long count2 = startupTimeSec;
+        long shutdownStepNumber = startupTimeSec;
         for (long i = initDelaySec + startupTimeSec + holdLoadTimeSec; i <= initDelaySec + startupTimeSec + holdLoadTimeSec + shutdownTimeSec; i++) {
-            timeLine.merge(i, (long) (threadPerSec * count2), Long::sum);
-            count2--;
+            timeLine.merge(i, (long) (threadPerSec * shutdownStepNumber), Long::sum);
+            shutdownStepNumber--;
         }
     }
 }
