@@ -6,8 +6,12 @@ import java.util.Map;
 public class LoadMapper {
     public static void main(String[] args) {
 
+        //Временная линия, где key - секунда(начиная c 0 и до конца теста) а value - количество активных thread`s в эту секунду.
         Map<Long, Long> timeLine = new HashMap<>();
-
+        
+        //функция mapper поэтапно смотрит, если ли такая точка в timeLine, если нет, то добавляет, если есть
+        //(этот шаг накладывается на один или несколько предыдущих), то к уже существующему количеству thread`s 
+        //в эту секунду добавляется значение за эту секунду из этого шага
         mapper(timeLine, 15, 23, 1, 45, 8);
         mapper(timeLine, 19, 7, 9, 12, 0);
         mapper(timeLine, 3, 200, 23, 10, 10);
