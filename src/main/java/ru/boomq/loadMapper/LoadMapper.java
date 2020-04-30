@@ -12,9 +12,9 @@ public class LoadMapper {
         //функция mapper поэтапно смотрит, если ли такая точка в timeLine, если нет, то добавляет, если есть
         //(этот шаг накладывается на один или несколько предыдущих), то к уже существующему количеству thread`s 
         //в эту секунду добавляется значение за эту секунду из этого шага
-        mapper(timeLine, 15, 23, 1, 45, 8);
-        mapper(timeLine, 19, 7, 9, 12, 0);
-        mapper(timeLine, 3, 200, 23, 10, 10);
+        mapper(timeLine, 5, 0, 0, 10, 5);
+        mapper(timeLine, 6, 17, 0, 10, 6);
+//        mapper(timeLine, 3, 200, 23, 10, 10);
 
         timeLine.forEach((k, v) -> System.out.println(k + ";" + v));
     }
@@ -45,8 +45,12 @@ public class LoadMapper {
 
         //тут у меня стояла задача равномерно разделить общее количество пользователей на количество секунд
         //rumpUp`a, поэтому я вычисляю среднее количество тредов, которые выводятся на этапе rump up за 1 секунду
-        double secForThread = (double) startupTimeSec / startThreadsCount;
-        double threadPerSec = 1 / secForThread;
+        double startupSecForThread;
+        double startupThreadPerSec = 0;
+        if (startupTimeSec > 0 && startThreadsCount > 0) {
+            startupSecForThread = (double) startupTimeSec / startThreadsCount;
+            startupThreadPerSec = 1 / startupSecForThread;
+        }
 
         //startup
         int startupStepNumber = 0;
@@ -67,7 +71,7 @@ public class LoadMapper {
             // в четвертую 2.5 * 10 = 25
             // в итоге мы сделали равномерное повышение нагрузки с 0 до 25
             // rump down работает аналогично, но с понижением
-            timeLine.merge(i, (long) (threadPerSec * startupStepNumber), Long::sum);
+            timeLine.merge(i, (long) (startupThreadPerSec * startupStepNumber), Long::sum);
             startupStepNumber++;
         }
 
@@ -76,13 +80,17 @@ public class LoadMapper {
             timeLine.merge(i, startThreadsCount, Long::sum);
         }
 
-        secForThread = (double) shutdownTimeSec / startThreadsCount;
-        threadPerSec = 1 / secForThread;
+        double shutdownSecForThread = 0;
+        double shutdownThreadPerSec = 0;
+        if (shutdownTimeSec > 0 && startThreadsCount > 0) {
+            shutdownSecForThread = (double) shutdownTimeSec / startThreadsCount;
+            shutdownThreadPerSec = 1 / shutdownSecForThread;
+        }
 
         //shutdown
         long shutdownStepNumber = shutdownTimeSec;
         for (long i = initDelaySec + startupTimeSec + holdLoadTimeSec; i <= initDelaySec + startupTimeSec + holdLoadTimeSec + shutdownTimeSec; i++) {
-            timeLine.merge(i, (long) (threadPerSec * shutdownStepNumber), Long::sum);
+            timeLine.merge(i, (long) (shutdownThreadPerSec * shutdownStepNumber), Long::sum);
             shutdownStepNumber--;
         }
     }
